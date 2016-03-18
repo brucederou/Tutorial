@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<!--
+Bruce Derou
+ID #1000949888
+CSE 4392 Project# 2
+
+The goal of this project is to learn JavaScript and DOM
+by implementing a simple computer game, 
+reminiscent to the Pong arcade video game from the 70s.
+-->
+
+<html lang="en">
+	<!--=========head begins====================-->
+	<head>
+	
+		<title>A Pong Game in JavaScript</title>
+		<meta charset="utf-8"/>
+		
+		<style type = "text/css">
+		
+			small {color: green;}
+			b {color: blue;}
+		
+		</style>
+		
+		<!--Script begins------------------------->
+		<script>
+
+			var paddle;
+			var ball;
+			var court;
+			
+			var score = 0;
+			var oldMaxScore = 0; // I do not have to use it for now.
+			var strikes = 0;
+			var messages;
+			
+			var ballSpeed = 3; //Slow speed is set as default speed.
+			
+			var XDirectionSpeed; //speed in x direction.
+			var YDirectionSpeed; //speed in y direction.
+			var ballXPosition; //x positions of ball
+			var ballYPosition; //y positions of ball.	
+
+			var paddleYPosition; // y position of paddle.
+			var timeInterval; //To store refreshing time.
+				
+			//On load, let's start the initialize() function.	
+			window.onload = initialize; //values and objects are initialized on load.
+			
+			//=======Time to write some functions=============
+			//=====================================================
+			//==================================	
+			//We will initialize objects and values.
+			function initialize(speedType)
+				{
+				
+				paddle = document.getElementById('paddle');
+				ball = document.getElementById('ball');
+				court = document.getElementById('court');
+				messages = document.getElementById('messages');
+				
+				//=========================
+				//Assigning speed to selected button.
+				if (speedType == "Slow") 
+					{
+					ballSpeed = 3;
+					}
+					
+				if (speedType == "Medium") 
+					{
+					ballSpeed = 5;
+					}
+
+				if (speedType == "Fast") 
+					{
+					ballSpeed = 7;
+					}				
+				//==========================
+				
+				messages.innerHTML = '<b>Press Start for a new game.</b>';
+				
+
+			    //initializing values for the player to have enough time to react on start.
+			    ballXPosition = 10;
+			    ballYPosition = 80;
+				
+				//Paddle is in the middle of his y-axis.
+			    paddleYPosition = (court.offsetHeight / 2) - (paddle.offsetHeight / 2);
+				
+			    //This is how fast the ball will move.
+			    XDirectionSpeed = YDirectionSpeed = ballSpeed;
+
+			    paddle.style.left = court.offsetWidth - (10 + paddle.offsetWidth) + 'px';
+			    paddle.style.top = paddleYPosition + 'px';
+			    ball.style.left = ballXPosition + 'px';
+			    ball.style.top = ballYPosition + 'px';				
+				}
+
+			//==================================			
+			//This function will start the game.
+			function startGame()
+				{
+				//Paddle will be move with mouse over it.
+				court.onmousemove = movePaddle;
+					
+				//Main Loop will run each 10 milliseconds.
+				timeInterval = setInterval('mainLoop()', 10);
+				
+				}
+				
+			//====================================
+			//This function will be called many times.
+			function mainLoop()
+				{
+
+				//The ball will move in x and y directions.
+				ballXPosition -= XDirectionSpeed;
+				ballYPosition -= YDirectionSpeed;
+
+				//In case the ball hits the left wall.
+				if(ballXPosition < 0)
+					{
+					messages.innerHTML = 'Please do not press start while the ball is moving.';
+					XDirectionSpeed = -XDirectionSpeed;//Balls goes back with opposite angle.
+					}	
+				//In case the ball passes the paddle.
+				if((ballXPosition + ball.offsetWidth) > court.offsetWidth)
+					{
+					//Well, we lost. Count the number of strikes.
+					
+					document.getElementById("score").innerHTML = strikes;
+					
+					//Let's reset our strikes counter.
+					strikes =0;
+					document.getElementById("strikes").innerHTML = strikes;
+					
+					//Let's start over.
+				    clearInterval(timeInterval);
+					
+					//The argument(1) is there for the sake of an argument.
+					initialize(1); //we reset the game.	
+					messages.innerHTML = 'OOOPS!!!, You missed the ball.';
+					}
+					
+			    // If ball hits top or bottom wall
+			    if(ballYPosition < 0 || ((ballYPosition + ball.offsetHeight) > court.offsetHeight))
+					{
+					YDirectionSpeed = -YDirectionSpeed; // ball goes in opposite direction.
+					}	
+
+			    // If ball hits paddle
+			    if((ballXPosition + ball.offsetWidth) > paddle.offsetLeft)			   
+					{
+					if(((ballYPosition + ball.offsetHeight) > paddleYPosition)
+					&& ballYPosition < (paddleYPosition + paddle.offsetHeight))
+						{
+						XDirectionSpeed = -XDirectionSpeed; //Ball goes in opposite direction.
+						
+						//Taking care of the score. GOAAAAAALLLLLL!!!
+						messages.innerHTML = '<small >EXCELLENT STRIKE!!!</small>';
+						strikes += 1;
+						
+						document.getElementById("strikes").innerHTML = strikes;
+						
+						}										
+					} 
+				
+				//The ball is placed accordingly.
+				ball.style.left = ballXPosition + 'px';
+				ball.style.top = ballYPosition + 'px';					
+				
+				}
+		
+			function movePaddle(event)
+				{
+				//Getting the mouse coordinate.
+				var y = (event.clientY - (court.offsetTop - document.documentElement.scrollTop));
+				
+				//Mouse will move if on court.
+				if(y > (court.offsetHeight - paddle.offsetHeight))
+				y = (court.offsetHeight - paddle.offsetHeight);
+				
+				//Here is the position
+			    paddleYPosition = y;
+			    paddle.style.top = y + 'px';
+				}
+
+			//====================================================
+			//We reset the game here.
+			function resetGame()
+				{
+				 location.reload();
+				}
+			//===================================================
+		
+		</script>
+		<!--Script ends--------------------------->
+
+	</head>
+	<!--=========head ends======================-->
+	
+	<!--=========body begins====================-->
+	
+	<body>
+	
+		<h1>Pong Game by Bruce Derou</h1>
+	  <form>	
+		  <input type="button" value="Start" onclick="startGame();" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		  <input type="button" value="Reset" onclick="resetGame();" /><br/>
+		  <!------------------------------------------------------------------------------>
+		  <label>
+			Slow<input type="radio" name="speed" value="Slow" checked="checked" onclick="initialize(this.value);"/>
+		  </label>
+		  <!------------------------------------------------------------------------------>
+		  <label>
+			Medium<input type="radio" name="speed" value="Medium" onclick="initialize(this.value);"/>
+		  </label>
+		  <!------------------------------------------------------------------------------>
+		  <label>
+			Fast<input type="radio" name="speed" value="Fast" onclick="initialize(this.value);"/>
+		  </label>		  
+		  
+		  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		  <label>Strikes: <span id="strikes">0</span></label>
+		  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		  <label>Max Score: <span id="score">0</span></label>
+		  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;		  
+		  <label>Messages: <span id="messages" style="color:red"></span></label>
+		  
+			<!--Here is the court---------------------------------------->
+			<div id="court" style="border: solid black; 
+				border-right-style: dashed; position: absolute;
+				background-color: azure; width: 800px; 
+				height: 500px;  cursor: none;">
+				
+				<!--Here is the paddle------The paddle is in the court-->
+				<img id="paddle" style = "position: absolute; 
+				border: 0px;" src="http://lambda.uta.edu/cse4392/paddle.gif" 
+				onclick="javascript: startGame()" />
+				
+				<!--Here is the ball--------The ball is in the court----->	
+				<img id="ball" style = "position: absolute; 
+				border: 0px;" src="http://lambda.uta.edu/cse4392/ball.gif" 
+				height="20px" style="margin: 0; padding: 0px; position: relative;" />
+			</div>
+						
+		</form>
+	
+	</body>
+	<!--=========body ends======================-->
+	
+</html>
